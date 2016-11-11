@@ -63,14 +63,14 @@ var options = {
 
 //test
 var Client = require("ibmiotf");
-var appClientConfig = require("./application.json");
+var appClientConfig = require(basicConfig2);
 var appClient = new Client.IotfApplication(appClientConfig);
 var tmp = null;
 appClient.connect();
 
 appClient.on("connect", function () 
 {
-    appClient.subscribeToDeviceEvents("myDeviceType","device01","+","json");
+    appClient.subscribeToDeviceEvents("iot-phone","nils","+","json");
 });
 appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) 
 {
