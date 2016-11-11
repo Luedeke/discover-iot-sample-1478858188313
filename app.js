@@ -9,10 +9,6 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json()); // for parsing application/json
 var appEnv = cfenv.getAppEnv();
 
-
-//test
-var Client = require("ibmiotf");
-//--
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var config = null;
@@ -44,6 +40,7 @@ if (process.env.VCAP_SERVICES) {
 
 var basicConfig = {
 	org: credentials.org,
+	id: "123456789",
 	apiKey: credentials.apiKey,
 	apiToken: credentials.apiToken
 };
@@ -57,21 +54,26 @@ var options = {
 	auth: basicConfig.apiKey + ':' + basicConfig.apiToken
 };
 
+//test
+var Client = require("ibmiotf");
+var appClientConfig = require("./application.json");
+var appClient = new Client.IotfApplication(appClientConfig);
+var tmp = null;
+appClient.connect();
+
+appClient.on("connect", function () 
+{
+    appClient.subscribeToDeviceEvents("myDeviceType","device01","+","json");
+});
+appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) 
+{
+    console.log("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
+	tmp = JSON.parse("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
+});
+//--
 app.get('/getData', function(req, res)
 {
-	var appClient = new Client.IotfApplication(appClientConfig);
-    appClient.connect();
-    appClient.on("connect", function () 
-	{
-        appClient.subscribeToDeviceEvents("myDeviceType","device01","+","json");
-    });
-    appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) 
-	{
-        console.log("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
-		
-		var tmp = JSON.parse("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
-		res.json(tmp);
-    });
+   res.json(tmp);
 });
 
 app.get('/credentials', function(req, res) {
@@ -127,6 +129,7 @@ app.post('/registerDevice', function(req, res) {
 	var deviceTypeDetails = {
 		id: typeId
 	}
+	
 	console.log(deviceTypeDetails);
 	var type_req = https.request(options, function(type_res) {
 		var str = '';
