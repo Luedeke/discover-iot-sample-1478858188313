@@ -9,6 +9,10 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json()); // for parsing application/json
 var appEnv = cfenv.getAppEnv();
 
+
+//test
+var Client = require("ibmiotf");
+//--
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var config = null;
