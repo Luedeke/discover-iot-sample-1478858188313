@@ -40,9 +40,13 @@ if (process.env.VCAP_SERVICES) {
 
 var basicConfig = {
 	org: credentials.org,
-	id: "123456789",
 	apiKey: credentials.apiKey,
-	apiToken: credentials.apiToken,	
+	apiToken: credentials.apiToken
+};
+
+var basicConfig2 = {
+	org: credentials.org,
+	id: "123456789",
 	"auth-key": credentials.apiKey,
 	"auth-token": credentials.apiToken,	
     "type" : "shared" // diese Verbindung als gemeinsam genutzt
