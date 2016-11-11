@@ -42,7 +42,9 @@ var basicConfig = {
 	org: credentials.org,
 	id: "123456789",
 	apiKey: credentials.apiKey,
-	apiToken: credentials.apiToken
+	apiToken: credentials.apiToken,	
+	authKey: credentials.apiKey,
+	authToken: credentials.apiToken
 };
 
 var options = {
