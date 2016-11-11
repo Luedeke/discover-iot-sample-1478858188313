@@ -13,6 +13,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var config = null;
 var credentials = null;
+
 if (process.env.VCAP_SERVICES) {
 	config = JSON.parse(process.env.VCAP_SERVICES);
 
@@ -23,6 +24,17 @@ if (process.env.VCAP_SERVICES) {
 		}
 	}
 } else {
+	credentials = 
+	{
+	"iotCredentialsIdentifier": "a2g6k39sl6r5",
+        "mqtt_host": "0gg91x.messaging.internetofthings.ibmcloud.com",
+        "mqtt_u_port": 1883,
+        "mqtt_s_port": 8883,
+        "http_host": "0gg91x.internetofthings.ibmcloud.com",
+        "org": "0gg91x",
+        "apiKey": "a-0gg91x-lul1r105av",
+        "apiToken": "LlrD-ElO?DNuIYSy3+"
+	};
 	console.log("ERROR: IoT Service was not bound!");
 }
 
@@ -40,6 +52,23 @@ var options = {
 	},
 	auth: basicConfig.apiKey + ':' + basicConfig.apiToken
 };
+
+app.get('/getData', function(req, res)
+{
+	var appClient = new Client.IotfApplication(appClientConfig);
+    appClient.connect();
+    appClient.on("connect", function () 
+	{
+        appClient.subscribeToDeviceEvents("myDeviceType","device01","+","json");
+    });
+    appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) 
+	{
+        console.log("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
+		
+		var tmp = JSON.parse("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
+		res.json(tmp);
+    });
+});
 
 app.get('/credentials', function(req, res) {
 	res.json(basicConfig);
