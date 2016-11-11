@@ -43,8 +43,9 @@ var basicConfig = {
 	id: "123456789",
 	apiKey: credentials.apiKey,
 	apiToken: credentials.apiToken,	
-	authKey: credentials.apiKey,
-	authToken: credentials.apiToken
+	"auth-key": credentials.apiKey,
+	"auth-token": credentials.apiToken,	
+    "type" : "shared" // diese Verbindung als gemeinsam genutzt
 };
 
 var options = {
