@@ -13,7 +13,6 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var config = null;
 var credentials = null;
-
 if (process.env.VCAP_SERVICES) {
 	config = JSON.parse(process.env.VCAP_SERVICES);
 
@@ -24,32 +23,20 @@ if (process.env.VCAP_SERVICES) {
 		}
 	}
 } else {
-	credentials = 
-	{
-	"iotCredentialsIdentifier": "a2g6k39sl6r5",
-        "mqtt_host": "0gg91x.messaging.internetofthings.ibmcloud.com",
-        "mqtt_u_port": 1883,
-        "mqtt_s_port": 8883,
-        "http_host": "0gg91x.internetofthings.ibmcloud.com",
-        "org": "0gg91x",
-        "apiKey": "a-0gg91x-lul1r105av",
-        "apiToken": "LlrD-ElO?DNuIYSy3+"
-	};
 	console.log("ERROR: IoT Service was not bound!");
 }
 
 var basicConfig = {
 	org: credentials.org,
 	apiKey: credentials.apiKey,
-	apiToken: credentials.apiToken
+	apiToken: credentials.apiToken,
 };
 
 var basicConfig2 = {
-	org: credentials.org,
-	id: "123456789",
+	"org": credentials.org,
+	"id": credentials.iotCredentialsIdentifier,
 	"auth-key": credentials.apiKey,
-	"auth-token": credentials.apiToken,	
-    "type" : "shared" // diese Verbindung als gemeinsam genutzt
+	"auth-token": credentials.apiToken
 };
 
 var options = {
@@ -60,28 +47,6 @@ var options = {
 	},
 	auth: basicConfig.apiKey + ':' + basicConfig.apiToken
 };
-
-//test
-var Client = require("ibmiotf");
-var appClientConfig = require(basicConfig2);
-var appClient = new Client.IotfApplication(appClientConfig);
-var tmp = null;
-appClient.connect();
-
-appClient.on("connect", function () 
-{
-    appClient.subscribeToDeviceEvents("iot-phone","nils","+","json");
-});
-appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) 
-{
-    console.log("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
-	tmp = JSON.parse("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
-});
-//--
-app.get('/getData', function(req, res)
-{
-   res.json(tmp);
-});
 
 app.get('/credentials', function(req, res) {
 	res.json(basicConfig);
@@ -136,7 +101,6 @@ app.post('/registerDevice', function(req, res) {
 	var deviceTypeDetails = {
 		id: typeId
 	}
-	
 	console.log(deviceTypeDetails);
 	var type_req = https.request(options, function(type_res) {
 		var str = '';
@@ -179,6 +143,32 @@ app.post('/registerDevice', function(req, res) {
 	}).on('error', function(e) { console.log("ERROR", e); });
 	type_req.write(JSON.stringify(deviceTypeDetails));
 	type_req.end();
+});
+
+var message = "";
+var Client = require("ibmiotf");
+var appClient = new Client.IotfApplication(basicConfig2);
+
+appClient.connect();
+
+appClient.on("connect", function () {
+
+	appClient.subscribeToDeviceEvents("iot-phone","Phone","+","json");
+
+});
+appClient.on("deviceEvent", function (deviceType, deviceId, eventType, format, payload) {
+	var payloadObj = JSON.parse(payload);
+	if (payloadObj.d.ob > 2 || payloadObj.d.og > 2 || payloadObj.d.ob < -2 || payloadObj.d.og < -2) {
+		message = "Smartphone liegt nicht flach."
+	} else {
+		message = "Smartphone liegt flach."
+	}
+	console.log("Device Event from :: "+deviceType+" : "+deviceId+" of event "+eventType+" with payload : "+payload);
+
+});
+
+app.get("/getData", function(req, res) {
+	res.json(message);
 });
 
 app.listen(appEnv.port, function() {
